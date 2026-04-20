@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom/client';
 import { CssBaseline, ThemeProvider } from '@mui/material';
 
 import App from './App';
+import { initPostMessageBridge } from './postMessageBridge';
 import theme from './theme';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
@@ -14,3 +15,5 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     </ThemeProvider>
   </React.StrictMode>
 );
+
+initPostMessageBridge();

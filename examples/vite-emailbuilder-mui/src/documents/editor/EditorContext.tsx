@@ -16,7 +16,7 @@ type TValue = {
   samplesDrawerOpen: boolean;
 };
 
-const editorStateStore = create<TValue>(() => ({
+export const editorStateStore = create<TValue>(() => ({
   document: getConfiguration(window.location.hash),
   selectedBlockId: null,
   selectedSidebarTab: 'styles',
