@@ -4,17 +4,34 @@
  * Wires the editor's Zustand store to the parent Rails app via postMessage.
  *
  * Parent → iframe:
- *   { type: 'setDocument', document: {...} }   — load a document
- *   { type: 'getDocument' }                    — request current document (responds with documentChanged)
+ *   { type: 'setDocument', document: {...} }              — load a document
+ *   { type: 'getDocument' }                               — request current document
+ *   { type: 'setTemplates', templates: [{name, document}] } — replace templates list
  *
  * iframe → parent:
- *   { type: 'editorReady' }                    — editor has mounted
- *   { type: 'documentChanged', document: {...} } — document updated or in response to getDocument
+ *   { type: 'editorReady' }                               — editor has mounted
+ *   { type: 'documentChanged', document: {...} }          — document updated or in response to getDocument
  */
 
 import { renderToStaticMarkup } from '@usewaypoint/email-builder';
 
 import { editorStateStore, resetDocument } from './documents/editor/EditorContext';
+
+export type AccountTemplate = { name: string; document: unknown };
+let accountTemplates: AccountTemplate[] = [];
+const templateSubscribers: Array<(t: AccountTemplate[]) => void> = [];
+
+export function getAccountTemplates(): AccountTemplate[] {
+  return accountTemplates;
+}
+
+export function subscribeToTemplates(cb: (t: AccountTemplate[]) => void): () => void {
+  templateSubscribers.push(cb);
+  return () => {
+    const i = templateSubscribers.indexOf(cb);
+    if (i >= 0) templateSubscribers.splice(i, 1);
+  };
+}
 
 const ALLOWED_ORIGINS = [
   window.location.origin,
@@ -53,6 +70,11 @@ export function initPostMessageBridge() {
       const current = editorStateStore.getState().document;
       const html = renderToStaticMarkup(current, { rootBlockId: 'root' });
       postToParent({ type: 'documentChanged', document: current, html });
+    }
+
+    if (type === 'setTemplates' && Array.isArray(event.data.templates)) {
+      accountTemplates = event.data.templates as AccountTemplate[];
+      templateSubscribers.forEach((cb) => cb(accountTemplates));
     }
 
     if (type === 'insertToken' && typeof event.data.token === 'string') {
