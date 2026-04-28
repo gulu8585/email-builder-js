@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [react()],
   base: '/email_editor/',
   build: {
-    outDir: resolve(__dirname, '../../public/email_editor'),
+    outDir: resolve(__dirname, '../../../public/email_editor'),
     emptyOutDir: true,
   },
   server: {
